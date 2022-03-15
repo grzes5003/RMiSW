@@ -20,7 +20,6 @@ def binet(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None):
         c21 = a[1][0] * b[0][0] + a[1][1] * b[1][0]
         c22 = a[1][0] * b[0][1] + a[1][1] * b[1][1]
         _callback(4 * 2, 4)
-        # print(f'{Int.__mul__.calls}, {Int.__add__.calls}')
         return [[c11, c12],
                 [c21, c22]]
 
@@ -56,7 +55,7 @@ def split_matrix(matrix):
     return matrix[:m, :m], matrix[:m, m:], matrix[m:, :m], matrix[m:, m:], m
 
 
-def strassen(x, y):
+def strassen(x, y, _callback: Callable[[int, int], None] = None):
     if len(x) == 1:
         global counter
         counter = counter + 1
