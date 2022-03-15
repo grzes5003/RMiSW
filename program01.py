@@ -36,5 +36,53 @@ def binet(a: Matrix, b: Matrix):
             *[[*_c1, *_c2] for _c1, _c2 in zip(c21, c22)]]
 
 
-def strassen(a: Matrix, b: Matrix, c: Matrix = []):
-    ...
+
+import time
+import numpy as np
+
+counter = 0
+
+def split_matrix(matrix):
+    n = len(matrix)
+
+    m = int(n / 2)
+    return matrix[:m, :m], matrix[:m, m:], matrix[m:, :m], matrix[m:, m:], m
+
+
+def strassen(x, y):
+    if len(x) == 1:
+        global counter
+        counter = counter + 1
+        return x * y
+
+    a, b, c, d, m = split_matrix(x)
+    e, f, g, h, m = split_matrix(y)
+    z = np.zeros(shape=(2 * m, 2 * m))
+    z = z.astype(int)
+    p1 = strassen(a, f - h)
+    p2 = strassen(a + b, h)
+    p3 = strassen(c + d, e)
+    p4 = strassen(d, g - e)
+    p5 = strassen(a + d, e + h)
+    p6 = strassen(b - d, g + h)
+    p7 = strassen(a - c, e + f)
+
+    z[: m, : m] = p5 + p4 - p2 + p6
+    z[: m, m:] = p1 + p2
+    z[m:, : m] = p3 + p4
+    z[m:, m:] = p1 + p5 - p3 - p7
+
+    return z
+
+
+if __name__ == "__main__":
+    x = np.array([[1, 0, 1, 0], [1, 2, 1, 0], [1, 3, 4, 2], [1, 2, 1, 1]])
+    y = np.array([[1, 0, 0, 1], [1, 0, 0, 1], [1, 0, 0, 1], [1, 0, 0, 1]])
+    # x = np.array([[1, 1], [0, 2]])
+    # y = np.array([[2, 1], [1, 0]])
+    print('Multiplication with Strassen algorithm: ')
+    start_time = time.time()
+    print(strassen(x, y))
+    print(str(round(((time.time() - start_time) * 1000), 3)) + " ms")
+    print("Operations amount: " + str(counter))
+
