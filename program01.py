@@ -1,5 +1,7 @@
 from typing import Callable
-
+from util import generate_charts
+import time
+import numpy as np
 
 Matrix = list[list[int]]
 
@@ -42,9 +44,6 @@ def binet(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None):
             *[[*_c1, *_c2] for _c1, _c2 in zip(c21, c22)]]
 
 
-import time
-import numpy as np
-
 counter = 0
 
 
@@ -80,31 +79,6 @@ def strassen(x, y, _callback: Callable[[int, int], None] = None):
 
     return z
 
-def generate_charts(x_axis, y_time, y_multi_operations, y_addition_operations):
-    plt.scatter(x_axis[:], y_time[:], color='b', label='Strassen algorithm')
-    plt.plot(x_axis[:], y_time[:], color='b')
-    plt.legend(loc="upper left")
-    plt.xlabel('Matrix size')
-    plt.ylabel('Multiplication time in s')
-    plt.title('Time of multiplication by size of matrix')
-    plt.grid()
-    plt.show()
-
-    plt.scatter(x_axis[:], y_multi_operations[:], color='r', label='Multiplication operations')
-    plt.plot(x_axis[:], y_multi_operations[:], color='r')
-    plt.xlabel('Matrix size')
-    plt.ylabel('Amount of multiplication operations')
-    plt.title('Amount of multiplication operations by size of matrix')
-    plt.grid()
-    plt.show()
-
-    plt.scatter(x_axis[:], y_addition_operations[:], color='b', label='Addition operations')
-    plt.plot(x_axis[:], y_addition_operations[:], color='b')
-    plt.xlabel('Matrix size')
-    plt.ylabel('Amount of addition operations')
-    plt.title('Amount of addition operations by size of matrix')
-    plt.grid()
-    plt.show()
 
 if __name__ == "__main__":
     y_time = []
@@ -118,7 +92,7 @@ if __name__ == "__main__":
         y = np.random.randint(10, size=(pow(2, i), pow(2, i)))
         start_time = time.time()
         print(strassen(x, y))
-        print("Time of multiplication: " + str(round(((time.time() - start_time)), 3)) + " s")
+        print("Time of multiplication: " + str(round((time.time() - start_time), 3)) + " s")
         print("Multiplication operations amount: " + str(counter))
         print("Addition operations amount: " + str(pow(4, i)))
         x_axis.append(pow(2, i))
@@ -127,4 +101,3 @@ if __name__ == "__main__":
         y_addition_operations.append(pow(4, i))
 
     generate_charts(x_axis, y_time, y_multi_operations, y_addition_operations)
-

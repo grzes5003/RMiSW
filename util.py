@@ -24,6 +24,33 @@ def plot_time(data: dict, title: str):
     plt.show()
 
 
+def generate_charts(x_axis, y_time, y_multi_operations, y_addition_operations):
+    plt.scatter(x_axis[:], y_time[:], color='b', label='Strassen algorithm')
+    plt.plot(x_axis[:], y_time[:], color='b')
+    plt.legend(loc="upper left")
+    plt.xlabel('Matrix size')
+    plt.ylabel('Multiplication time in s')
+    plt.title('Time of multiplication by size of matrix')
+    plt.grid()
+    plt.show()
+
+    plt.scatter(x_axis[:], y_multi_operations[:], color='r', label='Multiplication operations')
+    plt.plot(x_axis[:], y_multi_operations[:], color='r')
+    plt.xlabel('Matrix size')
+    plt.ylabel('Amount of multiplication operations')
+    plt.title('Amount of multiplication operations by size of matrix')
+    plt.grid()
+    plt.show()
+
+    plt.scatter(x_axis[:], y_addition_operations[:], color='b', label='Addition operations')
+    plt.plot(x_axis[:], y_addition_operations[:], color='b')
+    plt.xlabel('Matrix size')
+    plt.ylabel('Amount of addition operations')
+    plt.title('Amount of addition operations by size of matrix')
+    plt.grid()
+    plt.show()
+
+
 def plot_counters(data, title: str):
     _x = list(data.keys())
     _y = [data[key][0] + data[key][1] for key in data.keys()]
