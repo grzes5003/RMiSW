@@ -81,14 +81,39 @@ def strassen(x, y):
 
     return z
 
+def generate_charts(x_axis, y_time, y_operations):
+    plt.scatter(x_axis[:], y_time[:], color='b', label='Strassen algorithm')
+    plt.plot(x_axis[:], y_time[:], color='b')
+    plt.legend(loc="upper left")
+    plt.xlabel('Matrix size')
+    plt.ylabel('Multiplication time in ms')
+    plt.title('Time of multiplication by size of matrix')
+    plt.grid()
+    plt.show()
+
+    plt.scatter(x_axis[:], y_operations[:], color='b', label='Strassen algorithm')
+    plt.plot(x_axis[:], y_operations[:], color='b')
+    plt.xlabel('Matrix size')
+    plt.ylabel('Amount of operations')
+    plt.title('Amount of operations by size of matrix')
+    plt.grid()
+    plt.show()
 
 if __name__ == "__main__":
-    x = np.array([[1, 0, 1, 0], [1, 2, 1, 0], [1, 3, 4, 2], [1, 2, 1, 1]])
-    y = np.array([[1, 0, 0, 1], [1, 0, 0, 1], [1, 0, 0, 1], [1, 0, 0, 1]])
-    # x = np.array([[1, 1], [0, 2]])
-    # y = np.array([[2, 1], [1, 0]])
-    print('Multiplication with Strassen algorithm: ')
-    start_time = time.time()
-    print(strassen(x, y))
-    print(str(round(((time.time() - start_time) * 1000), 3)) + " ms")
-    print("Operations amount: " + str(counter))
+    y_time = []
+    y_operations = []
+    x_axis = []
+    for i in range(1, 10, 1):
+        counter = 0
+        print("Matrix multiplication of " + str(pow(2, i)) + "x" + str(pow(2, i)) + " size")
+        x = np.random.randint(10, size=(pow(2, i), pow(2, i)))
+        y = np.random.randint(10, size=(pow(2, i), pow(2, i)))
+        start_time = time.time()
+        print(strassen(x, y))
+        print("Time of multiplication: " + str(round(((time.time() - start_time) * 1000), 3)) + " ms")
+        print("Multiplication operations amount: " + str(counter))
+        x_axis.append(pow(2, i))
+        y_time.append(round(((time.time() - start_time) * 1000), 3))
+        y_operations.append(counter)
+
+    generate_charts(x_axis, y_time, y_operations)
