@@ -1,5 +1,24 @@
+import time
 import unittest
+from typing import Callable, Any
+
 from program01 import binet, strassen
+import numpy as np
+
+
+class Counter:
+    def __init__(self):
+        self.additions = 0
+        self.multiplications = 0
+
+    def callback(self, mults: int, adds: int):
+        self.additions += adds
+        self.multiplications += mults
+
+    def reset(self) -> [int, int]:
+        a, m = self.additions, self.multiplications
+        self.additions, self.multiplications = 0, 0
+        return a, m
 
 
 class Program01Test(unittest.TestCase):
@@ -90,13 +109,43 @@ class Program01Test(unittest.TestCase):
          [483, 610, 402, 410, 557, 506, 639, 446]]
     ]
 
+    def setUp(self) -> None:
+        np.random.seed(0)
+        self.counter = Counter()
+
+    @staticmethod
+    def get_rnd_matrices(n: int):
+        return [np.random.randint(5, size=(2 ** n, 2 ** n)).tolist() for _ in range(2)]
+
     def test_binet(self):
-        [self.assertEqual(_c, binet(_a, _b))
+        [self.assertEqual(_c, binet(_a, _b, self.counter.callback))
          for (_a, _b, _c) in zip(self.a, self.b, self.c)]
 
     def test_strassen(self):
-        [self.assertEqual(_c, strassen(_a, _b))
+        [self.assertTrue((np.array(_c) == strassen(np.array(_a), np.array(_b))).all())
          for (_a, _b, _c) in zip(self.a, self.b, self.c)]
+
+    def test_binet_bench(self):
+        self.benchmark(binet)
+
+    def test_strassen_bench(self):
+        self.benchmark(strassen)
+
+    def benchmark(self, func: Callable[[Any, Any, Callable], Any]):
+        score = {}
+        calls = {}
+        self.counter.reset()
+        for i in range(1, 16):
+            a, b = Program01Test.get_rnd_matrices(i)
+            tic = time.perf_counter()
+            c = func(a, b, self.counter.callback)
+
+            score[i] = time.perf_counter() - tic
+            calls[i] = self.counter.reset()
+
+            print(score)
+            print(calls)
+            self.assertEqual(len(c), 2 ** i)
 
 
 if __name__ == '__main__':
