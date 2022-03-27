@@ -3,7 +3,7 @@ from util import generate_charts
 import time
 import numpy as np
 
-Matrix = list[list[int]]
+Matrix = list[list[float]]
 
 
 def binet(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None):
@@ -78,6 +78,10 @@ def strassen(x, y, _callback: Callable[[int, int], None] = None):
     z[m:, m:] = p1 + p5 - p3 - p7
 
     return z
+
+
+def mult(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None) -> Matrix:
+    return binet(a, b, _callback)
 
 
 if __name__ == "__main__":
