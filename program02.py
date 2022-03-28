@@ -33,13 +33,12 @@ def inverse(a: Matrix, _c: Callable[[int, int], None] = None) -> Matrix:
     a22 = [i[_size:len(a)] for i in a[_size:len(a)]]
 
     ai11 = inverse(a11, _c)
-    ai12 = inverse(a12)
     s22 = sub(a22, mult(a21, mult(ai11, a12, _c), _c), _c)
     si22 = inverse(s22, _c)
 
     i = [[1 if y == x else 0 for y in range(_size)] for x in range(_size)]
     b11 = mult(ai11, add(i, mult(mult(mult(a12, si22, _c), a21, _c), ai11, _c), _c), _c)
-    b12 = neg(mult(mult(ai11, ai12, _c), si22, _c))
+    b12 = neg(mult(mult(ai11, a12, _c), si22, _c))
     b21 = neg(mult(mult(si22, a21, _c), ai11, _c))
     b22 = si22
 
