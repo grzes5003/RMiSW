@@ -1,4 +1,6 @@
 from typing import Callable, List
+
+from program02 import sub, add
 from util import generate_charts
 import time
 import numpy as np
@@ -49,45 +51,45 @@ counter = 0
 
 def split_matrix(matrix):
     n = len(matrix)
-
     m = int(n / 2)
-    return matrix[:m, :m], matrix[:m, m:], matrix[m:, :m], matrix[m:, m:], m
+
+    _size = int(len(matrix) / 2)
+    matrix11 = [i[:_size] for i in matrix[:_size]]
+    matrix12 = [i[_size:len(matrix)] for i in matrix[:_size]]
+    matrix21 = [i[:_size] for i in matrix[_size:len(matrix)]]
+    matrix22 = [i[_size:len(matrix)] for i in matrix[_size:len(matrix)]]
+    return matrix11, matrix12, matrix21, matrix22, m
 
 
-def strassen(x, y, _callback: Callable[[int, int], None] = None):
+def strassen(x: Matrix, y: Matrix, _c: Callable[[int, int], None] = None):
+    # x = np.array(x)
+    # y = np.array(y)
     if len(x) == 1:
         global counter
+        _c(1, 0)
         counter = counter + 1
-        return x * y
+        return [[x[0][0] * y[0][0]]]
 
     a, b, c, d, m = split_matrix(x)
     e, f, g, h, m = split_matrix(y)
     z = np.zeros(shape=(2 * m, 2 * m))
-    z = z.astype(int)
-    p1 = strassen(a, f - h)
-    p2 = strassen(a + b, h)
-    p3 = strassen(c + d, e)
-    p4 = strassen(d, g - e)
-    p5 = strassen(a + d, e + h)
-    p6 = strassen(b - d, g + h)
-    p7 = strassen(a - c, e + f)
+    z = z.astype(int).tolist()
+    p1 = strassen(a, sub(f, h, _c), _c)
+    p2 = strassen(add(a, b, _c), h, _c)
+    p3 = strassen(add(c, d, _c), e, _c)
+    p4 = strassen(d, sub(g, e, _c), _c)
+    p5 = strassen(add(a, d, _c), add(e, h, _c), _c)
+    p6 = strassen(sub(b, d, _c), add(g, h, _c), _c)
+    p7 = strassen(sub(a, c, _c), add(e, f, _c), _c)
 
-    z[: m, : m] = p5 + p4 - p2 + p6
-    z[: m, m:] = p1 + p2
-    z[m:, : m] = p3 + p4
-    z[m:, m:] = p1 + p5 - p3 - p7
+    c11 = add(sub(add(p5, p4, _c), p2, _c), p6, _c)
+    c12 = add(p1, p2, _c)
+    c21 = add(p3, p4, _c)
+    c22 = sub(sub(add(p1, p5, _c), p3, _c), p7, _c)
+    # _callback(0, 18)
 
-    return z
-
-
-def mult(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None) -> Matrix:
-    if True:
-        global counter
-        counter = 0
-        res = strassen(a, b)
-        _callback(counter, len(a[0]))
-        return res
-    return binet(a, b, _callback)
+    return [*[[*_c1, *_c2] for _c1, _c2 in zip(c11, c12)],
+            *[[*_c1, *_c2] for _c1, _c2 in zip(c21, c22)]]
 
 
 if __name__ == "__main__":

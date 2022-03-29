@@ -122,7 +122,7 @@ class Program01Test(unittest.TestCase):
          for (_a, _b, _c) in zip(self.a, self.b, self.c)]
 
     def test_strassen(self):
-        [self.assertTrue((np.array(_c) == strassen(np.array(_a), np.array(_b))).all())
+        [self.assertEqual(_c, strassen(_a, _b, self.counter.callback))
          for (_a, _b, _c) in zip(self.a, self.b, self.c)]
 
     def test_binet_bench(self):

@@ -1,7 +1,5 @@
 from typing import Callable, List
 
-from program01 import mult
-
 Matrix = List[List[float]]
 
 
@@ -19,6 +17,8 @@ def neg(a: Matrix) -> Matrix:
 
 
 def inverse(a: Matrix, _c: Callable[[int, int], None] = None) -> Matrix:
+    from test_program02 import A
+    mult = A.mult
 
     if len(a[0]) == 2:
         idet = 1 / (a[0][0] * a[1][1] - a[0][1] * a[1][0])
