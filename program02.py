@@ -1,8 +1,8 @@
-from typing import Callable
+from typing import Callable, List
 
 from program01 import mult
 
-Matrix = list[list[float]]
+Matrix = List[List[float]]
 
 
 def sub(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None) -> Matrix:

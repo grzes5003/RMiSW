@@ -1,11 +1,14 @@
+import time
 import unittest
+from typing import Any, Callable
 from unittest import TestCase
 
 import numpy as np
 from numpy.linalg import LinAlgError
 
+from program01 import binet, mult_strassen
 from program02 import add, sub, inverse, Matrix
-from test_program01 import Counter
+from test_program01 import Counter, Program01Test
 
 
 class Program02Test(TestCase):
@@ -97,6 +100,28 @@ class Program02Test(TestCase):
 
     def test_idt(self):
         print([np.linalg.det(_a) for _a in self.a])
+
+    def test_binet_bench(self):
+        self.benchmark(binet)
+
+    def test_strassen_bench(self):
+        self.benchmark(mult_strassen)
+
+    def benchmark(self, func: Callable[[Any, Callable], Any]):
+        score = {}
+        calls = {}
+        self.counter.reset()
+        for i in range(1, 16):
+            a = Program02Test.get_rnd_matrix(i)
+            tic = time.perf_counter()
+            c = func(a, self.counter.callback)
+
+            score[i] = time.perf_counter() - tic
+            calls[i] = self.counter.reset()
+
+            print(score)
+            print(calls)
+            self.assertEqual(len(c), 2 ** i)
 
 
 if __name__ == '__main__':

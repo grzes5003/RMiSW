@@ -1,9 +1,9 @@
-from typing import Callable
+from typing import Callable, List
 from util import generate_charts
 import time
 import numpy as np
 
-Matrix = list[list[float]]
+Matrix = List[List[float]]
 
 
 def binet(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None):
@@ -81,6 +81,12 @@ def strassen(x, y, _callback: Callable[[int, int], None] = None):
 
 
 def mult(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None) -> Matrix:
+    if True:
+        global counter
+        counter = 0
+        res = strassen(a, b)
+        _callback(counter, len(a[0]))
+        return res
     return binet(a, b, _callback)
 
 
