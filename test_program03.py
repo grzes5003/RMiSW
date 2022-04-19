@@ -1,16 +1,14 @@
 import time
 import unittest
-from scipy import linalg
-from typing import Any, Callable
 from unittest import TestCase
 
 import numpy as np
 from numpy.linalg import LinAlgError
 
 from program01 import binet, strassen
-from program02 import add, sub, inverse, Matrix
+from program02 import Matrix
 from program03 import lu_decomposition
-from test_program01 import Counter, Program01Test
+from test_program01 import Counter
 from test_program02 import A
 
 
