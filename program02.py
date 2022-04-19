@@ -25,7 +25,7 @@ def inverse(a: Matrix, _c: Callable[[int, int], None] = None) -> Matrix:
         return [[a[1][1] * idet, - a[0][1] * idet],
                 [- a[1][0] * idet, a[0][0] * idet]]
 
-        # divide input matrix into blocks
+    # divide input matrix into blocks
     _size = int(len(a) / 2)
     a11 = [i[:_size] for i in a[:_size]]
     a12 = [i[_size:len(a)] for i in a[:_size]]
