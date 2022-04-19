@@ -58,7 +58,7 @@ class Program02Test(TestCase):
                 try:
                     a = Program02Test.get_rnd_matrix(i)
                     tic = time.perf_counter()
-                    c = lu_decomposition(a, self.counter.callback)
+                    l, u = lu_decomposition(a, self.counter.callback)
 
                     score[i] = time.perf_counter() - tic
                     calls[i] = self.counter.reset()
@@ -67,7 +67,7 @@ class Program02Test(TestCase):
                 break
             print(score)
             print(calls)
-            self.assertEqual(len(c), 2 ** i)
+            self.assertEqual(len(l), 2 ** i)
 
 
 if __name__ == '__main__':
