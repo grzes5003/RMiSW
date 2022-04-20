@@ -17,7 +17,7 @@ def binet(a: Matrix, b: Matrix, _callback: Callable[[int, int], None] = None):
     :param _callback: function for counting (multiplications, additions)
     :return: result of A*B multiplication
     """
-    if len(a[0]) == 2:
+    if len(a) == 2:
         # calculate trivial multiplication solution
         c11 = a[0][0] * b[0][0] + a[0][1] * b[1][0]
         c12 = a[0][0] * b[0][1] + a[0][1] * b[1][1]

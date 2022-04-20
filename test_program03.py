@@ -7,9 +7,10 @@ from numpy.linalg import LinAlgError
 
 from program01 import binet, strassen
 from program02 import Matrix
-from program03 import lu_decomposition
+from program03 import lu_decomposition, _lu_decomposition
 from test_program01 import Counter
 from test_program02 import A
+from tmp_prog03 import LU_factorization
 
 
 class Program02Test(TestCase):
@@ -24,11 +25,24 @@ class Program02Test(TestCase):
         [[1, 62, 14, 51],
          [54, 5, 0, 46],
          [1, 2, 66, 2],
-         [41, 42, 323, 4]]
+         [41, 42, 323, 4]],
+
+        [[2, 8, 3, 1, 2, 5, 8, 0],
+         [5, 1, 3, 2, 8, 1, 6, 2],
+         [7, 5, 2, 8, 2, 2, 3, 1],
+         [2, 0, 6, 5, 3, 6, 3, 1],
+         [9, 3, 6, 5, 0, 2, 8, 5],
+         [6, 5, 5, 3, 9, 1, 9, 4],
+         [7, 1, 2, 6, 6, 3, 1, 9],
+         [9, 6, 2, 7, 5, 8, 6, 2]]
     ]
 
+    @staticmethod
+    def matmul(a: Matrix, b: Matrix, *args) -> Matrix:
+        return np.matmul(np.array(a), np.array(b)).tolist()
+
     def setUp(self) -> None:
-        np.random.seed(0)
+        np.random.seed(1)
         self.counter = Counter()
 
     @staticmethod
@@ -46,9 +60,16 @@ class Program02Test(TestCase):
         A.mult = binet
         self.benchmark()
 
+    def test_compare(self):
+        A.mult = binet
+        self.compare()
+
     def test_strassen_bench(self):
         A.mult = strassen
         self.benchmark()
+
+    def test_get_matrixes(self):
+        print(Program02Test.get_rnd_matrix(8))
 
     def benchmark(self):
         score, calls = {}, {}
@@ -68,6 +89,40 @@ class Program02Test(TestCase):
             print(score)
             print(calls)
             self.assertEqual(len(l), 2 ** i)
+
+    def compare(self):
+        from numpy.linalg import det, eigvals
+        from numpy import matmul, diagonal
+
+        det_res, eig_res = {}, {}
+        for i in range(1, 8):
+            while True:
+                try:
+                    a = Program02Test.get_rnd_matrix(i)
+                    l, u = LU_factorization(np.array(a), l=1)
+
+                    det_res[i] = np.prod(diagonal(l))*np.prod(diagonal(u))
+                    # eig_res[i] = diagonal(u).tolist()
+                    eig_res[i] = eigvals(matmul(l, u)).tolist()
+                except (LinAlgError, ZeroDivisionError):
+                    continue
+                break
+            print(det_res)
+            print(eig_res)
+
+    def test_check(self):
+        from numpy.linalg import det, eigvals
+
+        for i in range(1, 8):
+            while True:
+                try:
+                    a = Program02Test.get_rnd_matrix(i)
+                    l, u = _lu_decomposition(a, self.counter.callback)
+                    res = det(l)*det(u)
+                except (LinAlgError, ZeroDivisionError):
+                    continue
+                break
+            np.testing.assert_almost_equal(np.array(res), det(a))
 
 
 if __name__ == '__main__':
