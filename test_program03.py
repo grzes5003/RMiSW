@@ -7,10 +7,9 @@ from numpy.linalg import LinAlgError
 
 from program01 import binet, strassen
 from program02 import Matrix
-from program03 import lu_decomposition, _lu_decomposition
+from program03 import lu_decomposition
 from test_program01 import Counter
 from test_program02 import A
-from tmp_prog03 import LU_factorization
 
 
 class Program02Test(TestCase):
@@ -99,10 +98,9 @@ class Program02Test(TestCase):
             while True:
                 try:
                     a = Program02Test.get_rnd_matrix(i)
-                    l, u = LU_factorization(np.array(a), l=1)
+                    l, u = lu_decomposition(a, self.counter.callback)
 
                     det_res[i] = np.prod(diagonal(l))*np.prod(diagonal(u))
-                    # eig_res[i] = diagonal(u).tolist()
                     eig_res[i] = eigvals(matmul(l, u)).tolist()
                 except (LinAlgError, ZeroDivisionError):
                     continue
@@ -117,7 +115,7 @@ class Program02Test(TestCase):
             while True:
                 try:
                     a = Program02Test.get_rnd_matrix(i)
-                    l, u = _lu_decomposition(a, self.counter.callback)
+                    l, u = lu_decomposition(a, self.counter.callback)
                     res = det(l)*det(u)
                 except (LinAlgError, ZeroDivisionError):
                     continue
