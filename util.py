@@ -36,7 +36,7 @@ lab03_ops_binet = {1: (1, 2), 2: (27, 46), 3: (365, 570), 4: (3555, 5342), 5: (3
                    7: (1953336, 2907592), 8: (15598758, 23288636), 9: (124584704, 186383872),
                    10: (995574272, 1491241984)}
 
-lab03_ops_time = {1: 5.699999999997374e-06, 2: 0.0004481999999998987, 3: 0.0019671999999999468, 4: 0.016265500000000044,
+lab03_time_str = {1: 5.699999999997374e-06, 2: 0.0004481999999998987, 3: 0.0019671999999999468, 4: 0.016265500000000044,
                   5: 0.12381819999999988, 6: 0.9031782000000002, 7: 6.434086700000001, 8: 46.114228,
                   9: 322.75968450000005}
 
@@ -138,6 +138,6 @@ def plot_counters(data, data2, title: str):
 
 
 if __name__ == '__main__':
-    plot_time(res1_binet, res1_str, title='Czas wykonywania programu')
-    plot_counters(res2_binet, res2_str, title='Liczba operacji')
+    plot_time(lab03_time_binet, lab03_time_str, title='Czas wykonywania programu')
+    plot_counters(lab03_ops_binet, lab03_ops_str, title='Liczba operacji')
     # plot_counters(res2_str, title='Ilość operacji - Strassen')
