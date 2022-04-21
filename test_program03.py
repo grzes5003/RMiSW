@@ -10,6 +10,7 @@ from program02 import Matrix
 from program03 import lu_decomposition
 from test_program01 import Counter
 from test_program02 import A
+from tmp_prog03 import LU_factorization
 
 
 class Program02Test(TestCase):
@@ -89,24 +90,31 @@ class Program02Test(TestCase):
             print(calls)
             self.assertEqual(len(l), 2 ** i)
 
-    def compare(self):
+    def test_compare(self):
+        A.mult = binet
         from numpy.linalg import det, eigvals
         from numpy import matmul, diagonal
 
         det_res, eig_res = {}, {}
+        cnt = 0
         for i in range(1, 8):
             while True:
                 try:
                     a = Program02Test.get_rnd_matrix(i)
-                    l, u = lu_decomposition(a, self.counter.callback)
+                    # l, u = lu_decomposition(a, self.counter.callback)
+                    l, u = LU_factorization(np.array(a), l=1)
 
                     det_res[i] = np.prod(diagonal(l))*np.prod(diagonal(u))
                     eig_res[i] = eigvals(matmul(l, u)).tolist()
                 except (LinAlgError, ZeroDivisionError):
+                    cnt += 1
+                    np.random.seed(cnt)
+                    # print(f'not_found:{i}:{cnt}')
                     continue
                 break
             print(det_res)
             print(eig_res)
+            # print(a)
 
     def test_check(self):
         from numpy.linalg import det, eigvals

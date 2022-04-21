@@ -7,6 +7,7 @@ from functools import wraps
 
 from typing import Tuple
 
+from numpy.linalg import LinAlgError
 from numpy.random import default_rng
 
 sys.setrecursionlimit(10**7)
@@ -34,7 +35,7 @@ def timeit(func):
 
             end_time = time.perf_counter()
             total_time = end_time - start_time
-            print(f'{func.__name__} took {total_time:.4f} seconds')
+            # print(f'{func.__name__} took {total_time:.4f} seconds')
             return result
 
     return timeit_wrapper
@@ -287,7 +288,7 @@ def inverse(matrix, l):
     except ValueError:
         FLOATING_POINT_OPERATIONS += 1
         if matrix == 0:
-            raise Exception("Can't handle zero-like element!")
+            raise LinAlgError("Can't handle zero-like element!")
         else:
             return 1/matrix
     else:
