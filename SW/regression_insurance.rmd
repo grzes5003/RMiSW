@@ -1,0 +1,51 @@
+---
+title: "Lab01: Regresja liniowa"
+date: "Semestr letni 2021/22"
+output: html_document
+---
+
+## Medical Cost Personal Datasets
+
+### Load dataset
+
+```{r}
+insurance <- read.csv(file = 'insurance.csv')
+attach(insurance)
+head(insurance)
+```
+
+### Linear regression
+
+Podsumowanie przykładowego parametru
+```{r}
+fitted <- lm(charges ~ age)
+summary(fitted)
+```
+
+lm dla wszystkich parametrów
+```{r}
+fitted <- lm(charges ~ age + sex + bmi + children + smoker + region)
+summary(fitted)
+```
+
+Na podstawie wyników można wnioskować, że największy wpływ na cenę ubezpieczenia (**charges**) mają:
+
+* wiek - dość duży dodatni wpływ
+* bmi - większy niż dla wieku dodatni wpływ
+* czy posiada dzieci - zadziwiająco większy niż oba poprzednie wpływ dodatni
+* czy palący - spodziewany duży wpływ na wzrost kosztów
+
+Równocześnie najmniejsze dla przeanalizowanego zbioru znaczenie mają predyktory takie jak:
+
+* płeć - z małym prawdopodobieństwem płeć może mieć wpływ na koszt ubezpieczenia
+* region zamieszkania - brak bardzo wyraźnych przesłanek by wskazać wpływ tego czynnika
+
+lm dla predytkorów o dużym zmaczeniu
+```{r}
+fitted <- lm(charges ~ age + bmi + children + smoker )
+summary(fitted)
+```
+
+Model można uznać za dość dobrze dopasowany
+
+
