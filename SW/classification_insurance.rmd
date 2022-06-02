@@ -17,7 +17,7 @@ library(class)
 ```{r}
 insurance <- read.csv(file = 'insurance.csv')
 attach(insurance)
-head(insurance)
+(insurance)
 ```
 
 Obliczenie korelacji zmiennych numerycznych (z wyłączeniem `sex`, `smoker` oraz `region`)
@@ -38,7 +38,7 @@ Na podstawie wyników można wnioskować, że największy wpływ na to czy ktoś
 
 * wiek - ujemny wpływ
 * bmi - podobny do wieku ujemny wpływ
-* koszt ubezpieczenia - dosć duży dodatni wpływ
+* koszt ubezpieczenia - niewielki dodatni wpływ
 
 Równocześnie najmniejsze dla przeanalizowanego zbioru znaczenie mają predyktory takie jak:
 
@@ -141,7 +141,7 @@ smoker_train <- train$smoker
 smoker_test <- test$smoker
 train <- train[1:nrow(train) , c("age", "bmi", "charges")]
 test <- test[1:nrow(test) , c("age", "bmi", "charges")]
-dir_knn_1 <- knn(train, test, smoker_train, k = 1)
+dir_knn_1 <- knn(train, test, smoker_train, k = sqrt(nrow(train)))
 table(dir_knn_1, smoker_test)
 ```
 Najlepiej poradziła sobie z naszym zbiorem danych regresja logistyczna. Niewiele gorzej wypadł klasyfikator QDA. KNN oraz LDA poradziły sobie bardzo podobnie, ale wypadły gorzej niż pozostałe modele.
