@@ -1,0 +1,346 @@
+---
+title: 'Lab04: Drzewa decyzyjne i lasy losowe'
+output:
+  html_document: default
+  pdf_document: default
+date: '2022-06-14'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tree)
+library(randomForest)
+library(gbm)
+```
+
+## Medical Cost Personal Datasets
+
+### Load dataset
+
+```{r}
+insurance <- read.csv(file = 'insurance.csv')
+attach(insurance)
+```
+
+Konwersja danych
+```{r}
+insurance$sex <- as.factor(insurance$sex)
+insurance$smoker <- as.factor(insurance$smoker)
+insurance$region <- as.factor(insurance$region)
+insurance$age <- as.numeric(insurance$age)
+insurance$children <- as.numeric(insurance$children)
+```
+
+### Regression tree
+
+```{r regressiontree}
+charges_tree <- tree(charges ~., data = insurance)
+summary(charges_tree)
+```
+*Deviance* oznacza w tym przypadku RSS, czyli resztową sumę kwadratów. Przedstawienie drzewa
+```{r chargestreeshow}
+charges_tree
+plot(charges_tree)
+text(charges_tree)
+```
+
+
+Drzewo decyzyjne dla zbioru treningowego
+```{r chargestreeerror}
+set.seed(1)
+n <- nrow(insurance)
+train <- sample(n, n / 2)
+test <- -train
+charges_tree <- tree(charges ~., data = insurance, subset = train)
+charges_pred <- predict(charges_tree, newdata = insurance[test,])
+mean((charges_pred - insurance$charges[test])^2)
+```
+Wyznaczamy optymalne poddrzewo metodą przycinania sterowanego złożonością
+```{r charges.tree.cv}
+charges_cv <- cv.tree(charges_tree)
+plot(charges_cv$size, charges_cv$dev, type = "b")
+```
+
+Wybieramy rozmiar drzewa dla najmniejszego błędu
+```{r tree.size}
+size_opt <- charges_cv$size[which.min(charges_cv$dev)]
+size_opt
+```
+
+Przycinamy drzewo do zadanego poziomu
+```{r charges.prune}
+charges_pruned <- prune.tree(charges_tree, best = size_opt)
+plot(charges_pruned)
+text(charges_pruned)
+```
+
+
+## Classification tree
+
+```{r classTree}
+smoker_tree <- tree(smoker ~., data = insurance)
+summary(smoker_tree)
+```
+
+```{r plottree}
+plot(smoker_tree)
+text(smoker_tree, pretty = 0)
+```
+
+```{r print_tree}
+smoker_tree
+```
+
+Tworzymy drzewo dla zbioru uczącego i sprawdzamy skuteczność.
+```{r classtreeerror}
+set.seed(1)
+n <- nrow(insurance)
+train <- sample(n, n / 2)
+test <- -train
+smoker_tree <- tree(smoker ~., data = insurance, subset = train)
+tree_class <- predict(smoker_tree, newdata = insurance[test,], type = "class")
+table(tree_class, insurance$smoker[test])
+mean(tree_class != insurance$smoker[test])
+```
+
+Pełne drzewo dla zbioru uczącego
+```{r bigclasstree}
+plot(smoker_tree)
+text(smoker_tree, pretty = 0)
+```
+
+Do znalezienia optymalnego poddrzewa stosujemy przycinanie stosowane złożonością.
+Przy pomocy CV konstruujemy ciąg poddrzew wyznaczony przez malejącą złożoność.
+
+```{r classtreecv}
+set.seed(1)
+smoker_cv <- cv.tree(smoker_tree, FUN = prune.misclass)
+smoker_cv
+plot(smoker_cv$size, smoker_cv$dev, type = "b")
+```
+
+Składowa `smoker_cv$dev` zawiera liczbę błędów CV. Przycinamy drzewo
+do poddrzewa z najmniejszym poziomem błędów CV.
+
+```{r class.tree.prune}
+size_opt <- smoker_cv$size[which.min(smoker_cv$dev)]
+smoker_pruned <- prune.misclass(smoker_tree, best = size_opt)
+plot(smoker_pruned)
+text(smoker_pruned, pretty = 0)
+```
+
+Testowy poziom błędów dla optymalnego poddrzewa.
+```{r class.pruned.error}
+pruned_class <- predict(smoker_pruned, newdata = insurance[test,], 
+                        type = "class")
+table(pruned_class, insurance$smoker[test])
+mean(pruned_class != insurance$smoker[test])
+```
+
+
+### Bagging (regresja)
+
+```{r chargesbag}
+charges_bag <- randomForest(charges ~ ., data = insurance, mtry = 6, importance = TRUE)
+charges_bag
+```
+
+Wykres błędu OOB względem liczby drzew
+```{r chargesbagoob}
+plot(charges_bag, type = "l")
+```
+
+Wyznaczenie ważności predyktorów
+```{r chargesimportance}
+importance(charges_bag)
+```
+Wykres objaśniający ważność predyktoróW
+```{r chargesimpplot}
+varImpPlot(charges_bag)
+```
+
+Oszacowanie błędu testowego dla poprzednio wyznaczonego zbioru walidacyjnego.
+```{r bagvalid}
+set.seed(2)
+charges_bag <- randomForest(charges ~ ., data = insurance, subset = train, mtry = 6,
+                         importance = TRUE)
+charges_pred_bag <- predict(charges_bag, newdata = insurance[test,])
+mean((charges_pred_bag - insurance$charges[test])^2)
+plot(charges_pred_bag , insurance$charges[test])
+abline (0,1)
+```
+
+To samo co wyżej dla mniejszej liczby hodowanych drzew
+```{r chargesvbagvalidsmall}
+set.seed(2)
+charges_bag_s <- randomForest(charges ~ ., data = insurance, subset = train, mtry = 6, importance = TRUE, ntree = 25)
+charges_pred_bag_s <- predict(charges_bag_s, newdata = insurance[test,])
+mean((charges_pred_bag_s - insurance$charges[test])^2)
+```
+### Bagging (klasyfikacja)
+
+
+```{r smokerbag}
+smoker_bag <- randomForest(smoker ~ ., data = insurance, mtry = 6, importance = TRUE)
+smoker_bag
+```
+
+Wykres błędu OOB względem liczby drzew
+```{r smokerbagoob}
+plot(smoker_bag, type = "l")
+```
+
+Wyznaczenie ważności predyktorów
+```{r smokerimportance}
+importance(smoker_bag)
+```
+Obrazek ważności predyktorów
+```{r medvimpplot}
+varImpPlot(smoker_bag)
+```
+
+Oszacowanie błędu testowego dla poprzednio wyznaczonego zbioru walidacyjnego.
+```{r smokerbagvalid}
+set.seed(2)
+smoker_bag <- randomForest(smoker ~ ., data = insurance, subset = train, mtry = 6, importance = TRUE)
+smoker_pred_bag <- predict(smoker_bag, newdata = insurance[test,], type="class")
+importance(smoker_bag)
+table(smoker_pred_bag, insurance$smoker[test])
+mean(smoker_pred_bag != insurance$smoker[test])
+```
+Dla zmniejszonego zbioru uczącego obniżyła się ważność predyktorów.
+
+
+Powyższe dla mniejszej liczby hodowanych drzew
+```{r smokerbagvalidsmall}
+set.seed(2)
+smoker_bag_s <- randomForest(smoker ~ ., data = insurance, subset = train, mtry = 6, importance = TRUE, ntree = 25)
+smoker_pred_bag_s <- predict(smoker_bag_s, newdata = insurance[test,])
+table(smoker_pred_bag_s, insurance$smoker[test])
+mean(smoker_pred_bag_s != insurance$smoker[test])
+```
+Obniżenie liczby hodowanych drzew nieznacznie polepszyło dokładność.
+
+# Lasy losowe (regresja)
+
+Oszacowanie błędu testowego dla poprzednio wyznaczonego zbioru walidacyjnego.
+```{r chargesrfvalid}
+set.seed(2)
+charges_rf <- randomForest(charges ~ ., data = insurance, subset = train,
+                         importance = TRUE)
+charges_pred_rf <- predict(charges_rf, newdata = insurance[test,])
+mean((charges_pred_rf - insurance$charges[test])^2)
+```
+
+Powyższe dla mniejszej liczby hodowanych drzew
+```{r medvbagvalidsmall}
+set.seed(2)
+charges_bag_s <- randomForest(charges ~ ., data = insurance, subset = train, mtry = 4, importance = TRUE, ntree = 25)
+charges_pred_bag_s <- predict(charges_bag_s, newdata = insurance[test,])
+mean((charges_pred_bag_s - insurance$charges[test])^2)
+```
+
+# Lasy losowe (klasyfikacja)
+
+Oszacowanie błędu testowego dla poprzednio wyznaczonego zbioru walidacyjnego.
+```{r smokerrfvalid}
+set.seed(2)
+insurance$smoker = as.factor(insurance$smoker)
+smoker_rf <- randomForest(smoker ~ ., data = insurance, subset = train,
+                         importance = TRUE)
+smoker_pred_rf <- predict(smoker_rf, newdata = insurance[test,])
+mean((smoker_pred_rf != insurance$smoker[test]))
+```
+
+Powyższe dla mniejszej liczby hodowanych drzew
+```{r smokerbagvalidsmall1}
+set.seed(2)
+smoker_bag_s <- randomForest(smoker ~ ., data = insurance, subset = train, mtry = 4, importance = TRUE, ntree = 25)
+smoker_pred_bag_s <- predict(smoker_bag_s, newdata = insurance[test,])
+mean((smoker_pred_bag_s != insurance$smoker[test]))
+```
+
+
+# Boosting (regresja)
+
+```{r boost}
+charges_boost <- gbm(charges ~ ., data = insurance, distribution = "gaussian", n.trees = 5000, interaction.depth = 4)
+charges_boost
+```
+Funkcja `summary.gbm()` wyznacza ważność predyktorów i (domyślnie) wykonuje
+odpowiedni wykres.
+```{r boostimp1}
+summary(charges_boost)
+```
+
+Funkcja `plot.gbm()` wykonuje *wykresy częściowej zaleźności*.
+```{r chargesboostpdp}
+plot(charges_boost, i.var = "age")
+plot(charges_boost, i.var = "sex")
+plot(charges_boost, i.var = c("age", "sex"))
+```
+
+Oszacowanie błędu testowego dla poprzednio wyznaczonego zbioru walidacyjnego.
+```{r chargesboostvalid}
+set.seed(2)
+charges_boost <- gbm(charges ~ ., data = insurance[train,], distribution = "gaussian", interaction.depth = 4, n.trees = 5000)
+charges_pred_boost <- predict(charges_boost, newdata = insurance[test,], n.trees = 5000)
+mean((charges_pred_boost - insurance$charges[test])^2)
+```
+
+To samo dla $\lambda = 0.01$. Parametr ten odpowiada za spowolnienie uczenia się.
+```{r chargesboostvalidL}
+set.seed(2)
+charges_boost <- gbm(charges ~ ., data = insurance[train,], distribution = "gaussian", interaction.depth = 4, n.trees = 5000, shrinkage=0.01)
+charges_pred_boost <- predict(charges_boost, newdata = insurance[test,], n.trees = 5000)
+mean((charges_pred_boost - insurance$charges[test])^2)
+```
+
+
+# Boosting (klasyfikacja)
+
+```{r boosting}
+insurance$smoker = as.numeric(insurance$smoker)
+insurance = transform(insurance, smoker=smoker-1)
+smoker_boost <- gbm(smoker ~ ., data = insurance, distribution = "bernoulli", n.trees = 5000, interaction.depth = 4)
+smoker_boost
+```
+Funkcja `summary.gbm()` wyznacza ważność predyktorów i (domyślnie) wykonuje
+odpowiedni wykres.
+```{r boostimp}
+summary(smoker_boost)
+```
+
+Najbardziej istotnymi predyktorami jest zmienna charges oraz bmi. Nie istotne są predyktory children oraz sex.
+
+Funkcja `plot.gbm()` wykonuje *wykresy częściowej zaleźności*.
+```{r smokerboostpdp}
+plot(smoker_boost, i.var = "age")
+plot(smoker_boost, i.var = "sex")
+plot(smoker_boost, i.var = c("age", "sex"))
+```
+
+Oszacowanie błędu testowego dla poprzednio wyznaczonego zbioru walidacyjnego.
+```{r smokerboostvalid1}
+set.seed(2)
+smoker_boost <- gbm(smoker ~ ., data = insurance[train,], distribution = "bernoulli", interaction.depth = 4, n.trees = 5000)
+smoker_pred_boost <- predict(smoker_boost, newdata = insurance[test,], n.trees = 5000)
+mean((smoker_pred_boost - insurance$smoker[test])^2)
+```
+
+```{r}
+pred_test = predict.gbm(object = smoker_boost,
+                   newdata = insurance[test,],
+                   n.trees = 500,          
+                   type = "response")
+
+```
+
+
+To samo dla $\lambda = 0.01$.
+```{r smokerboostvalid}
+set.seed(2)
+smoker_boost <- gbm(smoker ~ ., data = insurance[train,], distribution = "bernoulli", interaction.depth = 4, n.trees = 5000, shrinkage=0.01)
+smoker_pred_boost <- predict(smoker_boost, newdata = insurance[test,], n.trees = 5000)
+mean((smoker_pred_boost - insurance$smoker[test])^2)
+```
